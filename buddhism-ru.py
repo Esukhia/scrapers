@@ -62,7 +62,7 @@ def cleanup():
 def main(url_base, min, max):
     out_path = Path('output')
     for i in range(min, max):
-        print(i)
+        print(i, end=' ')
         work = []
         page = 1
         title = ''
@@ -83,7 +83,7 @@ def main(url_base, min, max):
 
                 if not title and meta:
                     title = meta.replace('\n', '')[:80]  # filenames are limited
-                    print(title)
+                    print('\n', title, '\n')
 
                 # add the text found to pages
                 if text:
@@ -93,7 +93,7 @@ def main(url_base, min, max):
                 page = None
 
         if work:
-            out_file = out_path / (title + '.txt')
+            out_file = out_path / f'{i}_{title}.txt'
             out_file.write_text(''.join(work), encoding='utf-8-sig')
 
 
@@ -103,4 +103,4 @@ if __name__ == '__main__':
     base = 'http://www.buddism.ru:4000/?index={work}&field={page}&ocrData=read&ln=rus'
     min, max = 1, 1828650
 
-    main(base, min, max)
+    main(base, 50, 60)
