@@ -98,7 +98,7 @@ def main(url_base, min, max):
 
 
 if __name__ == '__main__':
-    cleanup()
+    # cleanup()
 
     base = 'http://www.buddism.ru:4000/?index={work}&field={page}&ocrData=read&ln=rus'
     min, max = 1, 1828650
