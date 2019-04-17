@@ -103,4 +103,4 @@ if __name__ == '__main__':
     base = 'http://www.buddism.ru:4000/?index={work}&field={page}&ocrData=read&ln=rus'
     min, max = 1, 1828650
 
-    main(base, 50, 60)
+    main(base, min, max)
