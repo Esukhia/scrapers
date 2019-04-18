@@ -71,6 +71,7 @@ def download_one_text(url_base, index, uptime):
     page = 1
     title = ''
     while page:
+        print(f'work: {index}, page: {page}')
         response = urllib.request.urlopen(url_base.format(work=index, page=page))
 
         content = get_content(response)
