@@ -108,22 +108,33 @@ def download_one_text(url_base, index, uptime):
         return f'elapsed: {since_start}'
 
 
-def main(url_base, min, max, uptime):
-    # single threaded version
-    for i in range(min, max):
-        download_one_text(url_base, i, uptime)
+# Create a function called "chunks" with two arguments, l and n:
+def chunks(l, n):
+    # For item i in a range that is a length of l,
+    for i in range(0, len(l), n):
+        # Create an index range for l of n items:
+        yield l[i:i+n]
+
+
+def main(min, max, batch_size):
+    total_tasks = range(min, max)
+    # Create a list that from the results of the function chunks:
+    batches = list(chunks(total_tasks, batch_size))
+
+    for batch in batches:
+        tasks = [(download_one_text, (base, b, uptime)) for b in batch]
+        freeze_support()
+        multi_thread_process(threads, tasks)
 
 
 if __name__ == '__main__':
-    # cleanup()
+    uptime = time.time()
+    cleanup()
 
     base = 'http://www.buddism.ru:4000/?index={work}&field={page}&ocrData=read&ln=rus'
+    batch_size = 300
+    threads = batch_size
     min = 1
-    # max = 1828650
-    max = 100
-    thread_number = 10
-    uptime = time.time()
-    tasks = [(download_one_text, (base, i, uptime)) for i in range(min, max)]  # generate all the tasks
+    max = 18286509
 
-    freeze_support()
-    multi_thread_process(thread_number, tasks)
+    main(min, max, batch_size)
