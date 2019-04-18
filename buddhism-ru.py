@@ -64,7 +64,7 @@ def cleanup():
         f.unlink()
 
 
-def download_one_text(url_base, index):
+def download_one_text(url_base, index, uptime):
     start_time = time.time()
     out_path = Path('output')
     work = []
@@ -101,15 +101,17 @@ def download_one_text(url_base, index):
 
     end_time = time.time()
     duration = str(datetime.timedelta(seconds=end_time - start_time))[:7]
+    since_start = str(datetime.timedelta(seconds=end_time - uptime))[:7]
     if title:
-        return f'{duration} — "{title}"'
+        return f'elapsed: {since_start} — {duration} — "{title}"'
     else:
-        return ''
+        return f'elapsed: {since_start}'
 
 
-def main(url_base, min, max):
+def main(url_base, min, max, uptime):
+    # single threaded version
     for i in range(min, max):
-        download_one_text(url_base, i)
+        download_one_text(url_base, i, uptime)
 
 
 if __name__ == '__main__':
@@ -117,10 +119,11 @@ if __name__ == '__main__':
 
     base = 'http://www.buddism.ru:4000/?index={work}&field={page}&ocrData=read&ln=rus'
     min = 1
-    max = 1828650
+    # max = 1828650
+    max = 100
     thread_number = 10
-
-    tasks = [(download_one_text, (base, i)) for i in range(min, max)]  # generate all the tasks
+    uptime = time.time()
+    tasks = [(download_one_text, (base, i, uptime)) for i in range(min, max)]  # generate all the tasks
 
     freeze_support()
     multi_thread_process(thread_number, tasks)
