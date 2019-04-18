@@ -1,9 +1,14 @@
 import urllib.request
 from pathlib import Path
 import re
+import time
+import datetime
+from multiprocessing import freeze_support
 
 from bs4 import BeautifulSoup
 from pybo import PyBoChunk
+
+from multithread import multi_thread_process
 
 
 class BoNonboChunk(PyBoChunk):
@@ -59,48 +64,63 @@ def cleanup():
         f.unlink()
 
 
-def main(url_base, min, max):
+def download_one_text(url_base, index):
+    start_time = time.time()
     out_path = Path('output')
-    for i in range(min, max):
-        print(i, end=' ')
-        work = []
-        page = 1
-        title = ''
-        while page:
-            response = urllib.request.urlopen(url_base.format(work=i, page=page))
+    work = []
+    page = 1
+    title = ''
+    while page:
+        response = urllib.request.urlopen(url_base.format(work=index, page=page))
 
-            content = get_content(response)
+        content = get_content(response)
 
-            if content:
-                meta, text = separate_text(content)
-                meta = ''.join(re.findall(r'\[Title:([^\]]+)\]', meta))  # only keep the Tibetan title as meta-data
-                meta, has_bo = clean_non_bo(meta)
-                text, _ = clean_non_bo(text)
+        if content:
+            meta, text = separate_text(content)
+            meta = ''.join(re.findall(r'\[Title:([^\]]+)\]', meta))  # only keep the Tibetan title as meta-data
+            meta, has_bo = clean_non_bo(meta)
+            text, _ = clean_non_bo(text)
 
-                if not title and not has_bo:
-                    page = None
-                    continue
-
-                if not title and meta:
-                    title = meta.replace('\n', '')[:80]  # filenames are limited
-                    print('\n', title, '\n')
-
-                # add the text found to pages
-                if text:
-                    work.append(text)
-                page += 1
-            else:
+            if not title and not has_bo:
                 page = None
+                continue
 
-        if work:
-            out_file = out_path / f'{i}_{title}.txt'
-            out_file.write_text(''.join(work), encoding='utf-8-sig')
+            if not title and meta:
+                title = meta.replace('\n', '')[:80]  # filenames are limited
+
+            # add the text found to pages
+            if text:
+                work.append(text)
+            page += 1
+        else:
+            page = None
+
+    if work:
+        out_file = out_path / f'{index}_{title}.txt'
+        out_file.write_text(''.join(work), encoding='utf-8-sig')
+
+    end_time = time.time()
+    duration = str(datetime.timedelta(seconds=end_time - start_time))[:7]
+    if title:
+        return f'{duration} — "{title}"'
+    else:
+        return ''
+
+
+def main(url_base, min, max):
+    for i in range(min, max):
+        download_one_text(url_base, i)
 
 
 if __name__ == '__main__':
     # cleanup()
 
     base = 'http://www.buddism.ru:4000/?index={work}&field={page}&ocrData=read&ln=rus'
-    min, max = 1, 1828650
+    min = 1
+    max = 1828650
+    thread_number = 10
 
-    main(base, min, max)
+    tasks = [(download_one_text, (base, i)) for i in range(min, max)]  # generate all the tasks
+
+    freeze_support()
+    multi_thread_process(thread_number, tasks)
