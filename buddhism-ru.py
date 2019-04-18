@@ -75,14 +75,14 @@ def download_one_text(index):
     page = 1
     title = ''
     while page:
-        print(f'work: {index}, page: {page}, download time: ', end='')
+
         dwnld_start = time.time()
         response = urllib.request.urlopen(base.format(work=index, page=page))
 
         content = get_content(response)
         dwnld_end = time.time()
         dwnld = str(dwnld_end - dwnld_start).split('.')[0]
-        print(dwnld)
+        print(f'work: {index}, page: {page}, download time: {dwnld}')
 
         if content:
             meta, text = separate_text(content)
