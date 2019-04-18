@@ -9,6 +9,10 @@ from bs4 import BeautifulSoup
 from pybo import PyBoChunk
 
 from multithread import multi_thread_process
+from multiprocessing import Pool
+
+
+base = 'http://www.buddism.ru:4000/?index={work}&field={page}&ocrData=read&ln=rus'
 
 
 class BoNonboChunk(PyBoChunk):
@@ -64,7 +68,7 @@ def cleanup():
         f.unlink()
 
 
-def download_one_text(url_base, index, uptime):
+def download_one_text(index):
     start_time = time.time()
     out_path = Path('output')
     work = []
@@ -73,12 +77,12 @@ def download_one_text(url_base, index, uptime):
     while page:
         print(f'work: {index}, page: {page}, download time: ', end='')
         dwnld_start = time.time()
-        response = urllib.request.urlopen(url_base.format(work=index, page=page))
+        response = urllib.request.urlopen(base.format(work=index, page=page))
 
         content = get_content(response)
         dwnld_end = time.time()
-        print(dwnld_end - dwnld_start)
-
+        dwnld = str(dwnld_end - dwnld_start).split('.')[0]
+        print(dwnld)
 
         if content:
             meta, text = separate_text(content)
@@ -136,10 +140,13 @@ if __name__ == '__main__':
     uptime = time.time()
     cleanup()
 
-    base = 'http://www.buddism.ru:4000/?index={work}&field={page}&ocrData=read&ln=rus'
     batch_size = 300
     threads = batch_size
     min = 1
     max = 18286509
 
-    main(min, max, batch_size)
+    with Pool(processes=batch_size) as pool:
+        pool.map(download_one_text, range(min, max))
+
+
+    # main(min, max, batch_size)
