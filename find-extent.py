@@ -1,12 +1,14 @@
 import urllib.request
 import pickle
+import random
 from re import search
 
+extentDict = {}
 base = 'http://www.buddism.ru:4000/?index={work}&field={page}&ocrData=read&ln=rus'
 work = 1
 page = 1
-
-extentDict = {}
+works = [*range(1828650)]
+random.shuffle(works)
 
 def getExtent(work):
     # gets work, returns extent
@@ -17,11 +19,10 @@ def getExtent(work):
     pdata = search("\"gray\"><b>from (-?\d+)<", htmlStr)
     return pdata.group(1)
 
-while work < 50:
+for work in works:
     extent = getExtent(work)
     extentDict[work] = extent
     print(work, extent)
-    work += 1
 
 with open('extent.pickle', 'wb') as fp:
     pickle.dump(extentDict, fp)
