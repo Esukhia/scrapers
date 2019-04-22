@@ -4,13 +4,18 @@ import pickle
 import random
 from re import search
 
-extentDict = {}
+# extentDict = {}
 base = 'http://www.buddism.ru:4000/?index={work}&field={page}&ocrData=read&ln=rus'
 work = 1
 page = 1
-works = [*range(650)]
+
+min = 1
+max = 1828660
+
+works = [*range(min, max)]
+# print(works)
 # works = [*range(1828650)]
-random.shuffle(works)
+# random.shuffle(works) 
 
 def getExtent(work):
     # gets work, returns extent
@@ -21,17 +26,31 @@ def getExtent(work):
     pdata = search("\"gray\"><b>from (-?\d+)<", htmlStr)
 
     extent = pdata.group(1)
+    extentDict = {}
     extentDict[work] = extent
     print(work, extent)
 
-    return pdata.group(1)
+    return extentDict
 
 
-with ThreadPool(100) as pool:
-    pool.map(getExtent, works)
 
-with open('extent.pickle', 'wb') as fp:
-    pickle.dump(extentDict, fp)
+
+i = min
+batch = 100
+while i < max:    
+    with ThreadPool(batch) as pool:
+        l = pool.map(getExtent, [*range(i, i+batch)])
+        with open('extent.csv','a+') as f:
+            for e in l:
+                for x, y in e.items():
+                    f.write("%s, %s\n" % (x, y))
+    f.close()  
+    i+=batch
+    # f.write("}")
+    
+
+# with open('extent.pickle', 'wb') as fp:
+#     pickle.dump(extentDict, fp)
 
 # with open ('extent.pickle', 'rb') as fp:
 #     itemlist = pickle.load(fp)
