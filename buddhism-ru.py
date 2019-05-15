@@ -90,9 +90,9 @@ def download_one_text(index):
             meta, has_bo = clean_non_bo(meta)
             text, _ = clean_non_bo(text)
 
-            if not title and not has_bo:
-                page = None
-                continue
+            # if not title and not has_bo:
+            #     page = None
+            #     continue
 
             if not title and meta:
                 title = meta.replace('\n', '')[:80]  # filenames are limited
@@ -140,13 +140,23 @@ if __name__ == '__main__':
     uptime = time.time()
     cleanup()
 
-    batch_size = 300
+    batch_size = 100
     threads = batch_size
-    min = 1
-    max = 18286509
+    min = 100
+    max = batch_size
+    total = 20000
 
-    with Pool(processes=batch_size) as pool:
-        pool.map(download_one_text, range(min, max))
+    while min < total:
 
+        with Pool(processes=batch_size) as pool:
+            pool.map(download_one_text, range(min, max))
+
+        min = max+1
+        max += batch_size
+        print(min, max)
 
     # main(min, max, batch_size)
+
+
+
+
