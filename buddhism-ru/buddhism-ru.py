@@ -31,6 +31,7 @@ class BoNonboChunk(PyBoChunk):
 
 
 def separate_text(content):
+    # TODO deal with [] at end of pages like: http://buddism.ru:4000/?index=8211&field=7&ocrData=read&ln=eng
     if ']' in content:
         idx = content.rfind(']')
         meta, text = content[:idx], content[idx + 1:]
@@ -56,6 +57,17 @@ def get_content(response):
     txt = ''.join([t for t in txt if t])
     return txt
 
+def getExtent(work):
+    # gets work, returns extent
+    url = base.format(work=work, page=1)
+    response = urllib.request.urlopen(url)
+    html = response.read()
+    htmlStr = html.decode()
+    pdata = re.search("\"gray\"><b>from (-?\d+)<", htmlStr)
+    extent = int(pdata.group(1))
+    if extent > 1000 or extent < 1:
+        extent = 0
+    return extent
 
 def cleanup():
     # create output dir if missing
@@ -72,9 +84,11 @@ def download_one_text(index):
     start_time = time.time()
     out_path = Path('output')
     work = []
+    extent = getExtent(index)
+    print(index, extent)
     page = 1
     title = ''
-    while page:
+    while page <= extent:
 
         dwnld_start = time.time()
         response = urllib.request.urlopen(base.format(work=index, page=page))
@@ -86,6 +100,8 @@ def download_one_text(index):
 
         if content:
             meta, text = separate_text(content)
+            print(page, 'text', text[:20])
+            print(page, 'content', content[:20])
             meta = ''.join(re.findall(r'\[Title:([^\]]+)\]', meta))  # only keep the Tibetan title as meta-data
             meta, has_bo = clean_non_bo(meta)
             text, _ = clean_non_bo(text)
@@ -98,11 +114,12 @@ def download_one_text(index):
                 title = meta.replace('\n', '')[:80]  # filenames are limited
 
             # add the text found to pages
-            if text:
-                work.append(text)
+            # if text:
+            work.append(content)
             page += 1
         else:
-            page = None
+            # page = None
+            break
 
     if work:
         out_file = out_path / f'{index}_{title}.txt'
@@ -142,9 +159,9 @@ if __name__ == '__main__':
 
     batch_size = 100
     threads = batch_size
-    min = 100
-    max = batch_size
-    total = 20000
+    min = 8149
+    max = min + batch_size
+    total = 8250
 
     while min < total:
 
