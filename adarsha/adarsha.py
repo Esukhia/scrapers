@@ -14,7 +14,7 @@ base = 'https://adarsha.dharma-treasure.org/api/kdbs/{name}/pbs?size=100&lastId=
 
 # [collection, starting pbs, ending pbs]
 # collection = ['degetengyur', 2308063, 2422561]
-collection = ['mipham', 1489993, 1511471]
+collection = ['mipam', 1489993, 1511471]
 # collection = ['jiangkangyur', 2561410, 2629691]
 
 # TODO Catalog: get all the names from the section "kdbs":[{"id":... on https://adarsha.dharma-treasure.org/kdbs/
