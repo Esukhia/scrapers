@@ -4,6 +4,7 @@
 # User data
 output/
 adarsha/*.json
+adarsha/*/*
 
 ### Eclipse ###
 .metadata
