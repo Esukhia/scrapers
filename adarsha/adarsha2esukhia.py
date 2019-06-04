@@ -12,10 +12,6 @@ os.mkdir(outdir)
 with open(infile, 'r') as f:
     pages = f.readlines()
 
-v = 1
-vol = 1
-
-
 def formatLines(lines):
     formatedLines = []
 
@@ -37,7 +33,6 @@ def extractLines(page):
     lines = []
     volume = int(re.search('"pbId":"(\d+?)-', page).group(1))
     lines.append(volume)
-    print(page[:15])
     pageNum = int(re.search('"pbId":"\d+?-\d+?-(\d+?)[a-z]', page).group(1))
     lines.append(pageNum)
     side = re.search('"pbId":"\d+?-\d+?-\d+?([a-z])', page).group(1)
