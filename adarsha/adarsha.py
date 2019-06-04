@@ -14,8 +14,8 @@ apiBase = 'https://adarsha.dharma-treasure.org/api/kdbs/{name}/pbs?size=100&last
 # TODO Volumes: parse text json and extract text and vol/line info
 
 # [work, starting pbs]
-# work = ['degetengyur', 2308063]
-work = ['mipam', 1489993]
+work = ['degetengyur', 2308063]
+# work = ['mipam', 1489993]
 # work = ['jiangkangyur', 2561410]
 
 def testUrl(work, pbs):

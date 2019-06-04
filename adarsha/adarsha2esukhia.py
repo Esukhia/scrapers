@@ -1,16 +1,37 @@
 import re
 import shutil
 import os
+import requests
+from bs4 import BeautifulSoup
 
-infile = 'adarsha/degetengyur.json'
+base = 'https://adarsha.dharma-treasure.org/'
+workBase = 'https://adarsha.dharma-treasure.org/kdbs/{name}'
+apiBase = 'https://adarsha.dharma-treasure.org/api/kdbs/{name}/pbs?size=100&lastId={pbs}'
 
-outdir = 'adarsha/degetengyur/'
-shutil.rmtree(outdir, ignore_errors=True)
-os.mkdir(outdir)
+# [work, starting pbs]
+work = ['degetengyur', 2308063]
+# work = ['mipam', 1489993]
+# work = ['jiangkangyur', 2561410]
+
+outdir = f'adarsha/{work[0]}/'
+if not os.path.exists(outdir):
+    os.mkdir(outdir)
 
 
-with open(infile, 'r') as f:
-    pages = f.readlines()
+def item_generator(things):
+    # because writelines() is such a tease
+    for item in things:
+        yield item
+        yield '\n'
+
+def writePage(page):
+    lines = extractLines(page)
+    formatedLines = formatLines(lines)
+
+    fileName = "{:0>3d}".format(formatedLines.pop(0))
+
+    with open(f'{outdir}{fileName}.txt', 'a+', encoding='utf-8') as file:
+        file.writelines(item_generator(formatedLines))
 
 def formatLines(lines):
     formatedLines = []
@@ -44,20 +65,41 @@ def extractLines(page):
 
     return lines
 
-def item_generator(things):
-    # because writelines() is such a tease
-    for item in things:
-        yield item
-        yield '\n'
+def testUrl(work, pbs):
+    # check if url has text
+    url = apiBase.format(name=work[0], pbs=pbs)
+    response = requests.get(url)
+    if response.text == '{"total":0,"data":[]}':
+        print(response.text)
+        status = False
+    else:
+        status = True
+    return status
 
-for page in pages:
-    lines = extractLines(page)
-    formatedLines = formatLines(lines)
+def getwork(work=work):
+    # put the work in a json
+    i = work[1]
+    # Empty file if already existing
+    while testUrl(work, i):
+        url = apiBase.format(name=work[0], pbs=i)
+        response = requests.get(url)
+        text = response.text.replace("},{", "},\n{")
+        pages = text.splitlines()
 
-    fileName = "{:0>3d}".format(formatedLines.pop(0))
+        for page in pages:
+            writePage(page)
 
-    with open(f'{outdir}{fileName}.txt', 'a+', encoding='utf-8') as file:
-        file.writelines(item_generator(formatedLines))
+        print(f'pbs: {i}')
+        i += 100
+
+if __name__ == '__main__':
+
+    getwork()
+    
+    print('Done!')
+
+
+
 
 
     
