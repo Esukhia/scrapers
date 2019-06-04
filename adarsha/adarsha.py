@@ -42,7 +42,7 @@ def getwork(work=work):
         response = requests.get(url)
         text = response.text.replace("},{", "},\n{")
 
-        with open(outPath, "a+") as f:
+        with open(outPath, "a+", encoding='utf-8') as f:
             f.write(text)
         print(f'pbs: {i}')
         f.close
@@ -61,7 +61,7 @@ def getRawCatalog():
 # get general catalog
     text = requests.get(base).text
     catalogJson = re.search('"kdbs":(.+?),"kdbData":', text).group(1).replace("},{", "},\n{")
-    with open('adarsha/'+'adharsha'+'_catalog.json', "w") as f:
+    with open('adarsha/'+'adharsha'+'_catalog.json', "w", encoding='utf-8') as f:
         f.write(catalogJson)
     return catalogJson
 
